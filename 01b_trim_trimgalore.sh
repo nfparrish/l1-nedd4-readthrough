@@ -37,6 +37,7 @@ if [[ "$LIBRARY_LAYOUT" == "PE" ]]; then
     [[ -f "$R2" ]] || { echo "ERROR: $R2 not found" >&2; exit 1; }
 
     trim_galore \
+        --path_to_cutadapt "${VENV_DIR}/bin/cutadapt" \
         --quality "${TRIM_QUALITY}" \
         --length  "${TRIM_MIN_LENGTH}" \
         --paired \
@@ -59,6 +60,7 @@ else
     [[ -f "$RAW" ]] || { echo "ERROR: $RAW not found" >&2; exit 1; }
 
     trim_galore \
+        --path_to_cutadapt "${VENV_DIR}/bin/cutadapt" \
         --quality "${TRIM_QUALITY}" \
         --length  "${TRIM_MIN_LENGTH}" \
         --fastqc \
