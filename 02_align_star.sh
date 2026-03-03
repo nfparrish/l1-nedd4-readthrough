@@ -33,16 +33,16 @@ fi
 
 mkdir -p "${BAM_DIR}"
 
-# ---- Determine input files — prefer Trim Galore output, fall back to raw ----
+# ---- Determine input files — prefer Trimmomatic output, fall back to raw ----
 if [[ "$LIBRARY_LAYOUT" == "PE" ]]; then
-    # Trim Galore PE naming: SRR_1_val_1.fq.gz / SRR_2_val_2.fq.gz
-    TRIM_R1="${FASTQ_DIR}/${SRR}_1_val_1.fq.gz"
-    TRIM_R2="${FASTQ_DIR}/${SRR}_2_val_2.fq.gz"
+    # Trimmomatic PE naming: SRR_1_trimmed_P.fq.gz / SRR_2_trimmed_P.fq.gz
+    TRIM_R1="${FASTQ_DIR}/${SRR}_1_trimmed_P.fq.gz"
+    TRIM_R2="${FASTQ_DIR}/${SRR}_2_trimmed_P.fq.gz"
     RAW_R1="${FASTQ_DIR}/${SRR}_1.fastq.gz"
     RAW_R2="${FASTQ_DIR}/${SRR}_2.fastq.gz"
     if [[ -f "$TRIM_R1" && -f "$TRIM_R2" ]]; then
         READ_FILES="${TRIM_R1} ${TRIM_R2}"
-        echo "  Using Trim Galore outputs"
+        echo "  Using Trimmomatic outputs"
     elif [[ -f "$RAW_R1" && -f "$RAW_R2" ]]; then
         READ_FILES="${RAW_R1} ${RAW_R2}"
         echo "  WARNING: trimmed FASTQs not found — using raw"

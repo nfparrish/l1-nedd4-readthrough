@@ -51,7 +51,7 @@ export MOD_STAR="STAR/2.7.11a"
 export MOD_SAMTOOLS="samtools/1.21"
 export MOD_R="R/4.4.3"
 export MOD_FASTQC="FastQC/0.11.7"
-export MOD_TRIMGALORE="Trim_galore/0.4.3"
+# Note: Trimmomatic (now used instead of legacy Trim Galore 0.4.3) loads inline in trim script
 export MOD_SUBREAD="Subread/2.0.3"       # featureCounts
 export MOD_BEDTOOLS="Bedtools/2.30.0"
 
@@ -65,7 +65,7 @@ export BAM_SUBSET_REGION="chr15:54958936-56959936"   # NEDD4 locus ±1 Mb
 # Proxy SNP (for annotation only — NOT for window placement)
 export PROXY_SNP_POS="chr15:55862437"    # rs16976600
 
-# --- Trim Galore parameters ---
+# --- Adapter trimming parameters (applies to Trimmomatic) ---
 export TRIM_QUALITY=20          # Phred quality cutoff
 export TRIM_MIN_LENGTH=36       # discard reads shorter than this post-trim
 

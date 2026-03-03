@@ -95,11 +95,11 @@ echo "[Step 1] Build STAR index: job ${JOB_IDX}"
 # Do NOT advance DEP_ON here — trim also depends on setup (DEP_ON still = JOB_SETUP)
 
 # ------ Step 1.5: Adapter trimming (parallel with index) --
-JOB_TRIM=$(submit "trim" "${PIPELINE_DIR}/01b_trim_trimgalore.sh" \
+JOB_TRIM=$(submit "trim" "${PIPELINE_DIR}/01b_trim_trimmomatic.sh" \
     --array=1-4 \
     --job-name=trim_mcf7 \
     --mem=8G -c 4 --time=02:00:00)
-echo "[Step 1.5] Trim Galore (array 1-4): job ${JOB_TRIM}"
+echo "[Step 1.5] Trimmomatic (array 1-4): job ${JOB_TRIM}"
 
 # ------ Step 2: STAR alignment — depends on BOTH index AND trim
 JOB_ALIGN=$(submit_dep2 "align" "${JOB_IDX}:${JOB_TRIM}" \

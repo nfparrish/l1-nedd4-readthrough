@@ -14,7 +14,7 @@
 # Steps:
 #   0   Setup Python env + directories
 #   1   Build STAR genome index
-#   1.5 Adapter trimming (Trim Galore, array) [runs parallel to index]
+#   1.5 Adapter trimming (Trimmomatic, array) [runs parallel to index]
 #   2   STAR alignment (array) [depends on both index AND trim]
 #   3   Post-alignment QC (array)
 #   4   Collect results + TMM normalization
@@ -104,9 +104,9 @@ fi
 
 # ── Step 1.5: Adapter trimming (parallel with index build) ───────────────
 if [[ $FROM_STEP -le 1 ]]; then
-    JOB_TRIM=$(submit "${SCRIPT_DIR}/01b_trim_trimgalore.sh" \
+    JOB_TRIM=$(submit "${SCRIPT_DIR}/01b_trim_trimmomatic.sh" \
         --array="1-${NUM_SAMPLES}%16")
-    echo "[Step 1.5] Trim Galore (array 1-${NUM_SAMPLES}): job ${JOB_TRIM}"
+    echo "[Step 1.5] Trimmomatic (array 1-${NUM_SAMPLES}): job ${JOB_TRIM}"
 fi
 
 # ── Step 2: STAR alignment (array) — requires BOTH index AND trim ────────
