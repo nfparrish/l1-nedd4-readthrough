@@ -1,0 +1,6 @@
+[2026-03-02T13:03:05-05:00] Downloading ERR973734 from ENA FTP
+  Fetching: https://ftp.sra.ebi.ac.uk/vol1/fastq/ERR973/ERR973734/ERR973734_1.fastq.gz
+  Done: 12G
+  Fetching: https://ftp.sra.ebi.ac.uk/vol1/fastq/ERR973/ERR973734/ERR973734_2.fastq.gz
+  Done: 13G
+[2026-03-02T13:41:46-05:00] Download complete: ERR973734

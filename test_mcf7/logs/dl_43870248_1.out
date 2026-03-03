@@ -1,0 +1,4 @@
+[2026-03-03T01:51:02-05:00] Downloading ERR973734 from ENA FTP
+  Already exists: /work/nfp8/MCF7_ctrl/fastq/ERR973734_1.fastq.gz
+  Already exists: /work/nfp8/MCF7_ctrl/fastq/ERR973734_2.fastq.gz
+[2026-03-03T01:51:02-05:00] Download complete: ERR973734

@@ -1,0 +1,7 @@
+Trim_galore 0.4.3
+No quality encoding type selected. Assuming that the data provided uses Sanger encoded Phred scores (default)
+
+Path to Cutadapt set as: 'cutadapt' (default)
+Can't exec "cutadapt": No such file or directory at /opt/apps/rhel7/trim_galore-0.4.3/trim_galore line 61, <SANITY> line 4.
+Failed to execute Cutadapt porperly. Please install Cutadapt first and make sure it is in the PATH, or specify the path to the Cutadapt executable using --path_to_cutadapt /path/to/cutadapt
+

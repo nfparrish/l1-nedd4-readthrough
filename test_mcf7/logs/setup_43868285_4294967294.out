@@ -1,0 +1,116 @@
+[2026-03-02T23:53:57-05:00] Setting up Python virtual environment and directory tree
+Collecting pip
+  Downloading https://files.pythonhosted.org/packages/27/79/8a850fe3496446ff0d584327ae44e7500daf6764ca1a382d2d02789accf7/pip-20.3.4-py2.py3-none-any.whl (1.5MB)
+Installing collected packages: pip
+  Found existing installation: pip 9.0.1
+    Uninstalling pip-9.0.1:
+      Successfully uninstalled pip-9.0.1
+Successfully installed pip-20.3.4
+Collecting pandas
+  Downloading pandas-0.25.3-cp35-cp35m-manylinux1_x86_64.whl (10.3 MB)
+Collecting matplotlib
+  Downloading matplotlib-3.0.3-cp35-cp35m-manylinux1_x86_64.whl (13.0 MB)
+Collecting seaborn
+  Downloading seaborn-0.9.1-py2.py3-none-any.whl (216 kB)
+Collecting multiqc
+  Downloading multiqc-1.20-py3-none-any.whl (4.6 MB)
+Collecting python-dateutil>=2.1
+  Downloading python_dateutil-2.9.0.post0-py2.py3-none-any.whl (229 kB)
+Collecting cycler>=0.10
+  Downloading cycler-0.10.0-py2.py3-none-any.whl (6.5 kB)
+Collecting pyparsing!=2.0.4,!=2.1.2,!=2.1.6,>=2.0.1
+  Downloading pyparsing-2.4.7-py2.py3-none-any.whl (67 kB)
+Collecting kiwisolver>=1.0.1
+  Downloading kiwisolver-1.1.0-cp35-cp35m-manylinux1_x86_64.whl (90 kB)
+Collecting numpy>=1.10.0
+  Downloading numpy-1.18.5-cp35-cp35m-manylinux1_x86_64.whl (19.9 MB)
+Collecting six
+  Downloading six-1.17.0-py2.py3-none-any.whl (11 kB)
+Requirement already satisfied: setuptools in /hpc/group/parrishlab/envs/l1nedd4_py39/lib/python3.5/site-packages (from kiwisolver>=1.0.1->matplotlib) (28.8.0)
+Collecting click
+  Downloading click-7.1.2-py2.py3-none-any.whl (82 kB)
+Collecting pyyaml>=4
+  Downloading PyYAML-5.3.1.tar.gz (269 kB)
+Collecting humanize
+  Downloading humanize-2.6.0-py3-none-any.whl (68 kB)
+Collecting multiqc
+  Downloading multiqc-1.19-py3-none-any.whl (1.4 MB)
+  Downloading multiqc-1.18-py3-none-any.whl (1.4 MB)
+  Downloading multiqc-1.17-py3-none-any.whl (1.4 MB)
+  Downloading multiqc-1.16-py3-none-any.whl (1.4 MB)
+  Downloading multiqc-1.15-py3-none-any.whl (1.3 MB)
+  Downloading multiqc-1.14-py3-none-any.whl (1.3 MB)
+  Downloading multiqc-1.13-py3-none-any.whl (1.2 MB)
+Collecting jinja2>=2.9
+  Downloading Jinja2-2.11.3-py2.py3-none-any.whl (125 kB)
+Collecting markdown
+  Downloading Markdown-3.2.2-py3-none-any.whl (88 kB)
+Collecting simplejson
+  Downloading simplejson-3.20.2-py3-none-any.whl (57 kB)
+Collecting multiqc
+  Downloading multiqc-1.12-py3-none-any.whl (1.2 MB)
+  Downloading multiqc-1.11-py3-none-any.whl (1.2 MB)
+  Downloading multiqc-1.10.1-py3-none-any.whl (1.1 MB)
+  Downloading multiqc-1.10-py3-none-any.whl (2.5 MB)
+Collecting future>0.14.0
+  Downloading future-1.0.0-py3-none-any.whl (491 kB)
+Collecting coloredlogs
+  Downloading coloredlogs-15.0.1-py2.py3-none-any.whl (46 kB)
+Collecting spectra>=0.0.10
+  Downloading spectra-0.1.0-py3-none-any.whl (17 kB)
+Collecting networkx
+  Downloading networkx-2.4-py3-none-any.whl (1.6 MB)
+Collecting requests
+  Downloading requests-2.25.1-py2.py3-none-any.whl (61 kB)
+Collecting multiqc
+  Downloading multiqc-1.9.tar.gz (1.9 MB)
+Collecting matplotlib
+  Downloading matplotlib-2.2.5-cp35-cp35m-manylinux1_x86_64.whl (12.8 MB)
+Collecting networkx<2.3
+  Downloading networkx-2.2.zip (1.7 MB)
+Collecting numpy>=1.10.0
+  Downloading numpy-1.16.6-cp35-cp35m-manylinux1_x86_64.whl (17.2 MB)
+Collecting lzstring
+  Downloading lzstring-1.0.4.tar.gz (4.3 kB)
+Collecting markdown<3.2
+  Downloading Markdown-3.1.1-py2.py3-none-any.whl (87 kB)
+Collecting pytz
+  Downloading pytz-2025.2-py2.py3-none-any.whl (509 kB)
+Collecting MarkupSafe>=0.23
+  Downloading MarkupSafe-1.1.1-cp35-cp35m-manylinux1_x86_64.whl (27 kB)
+Collecting setuptools
+  Downloading setuptools-50.3.2-py3-none-any.whl (785 kB)
+Collecting decorator>=4.3.0
+  Downloading decorator-5.1.1-py3-none-any.whl (9.1 kB)
+Collecting colormath2>=3.0.0
+  Downloading colormath2-3.0.3-py3-none-any.whl (40 kB)
+Collecting scipy>=0.17.1
+  Downloading scipy-1.4.1-cp35-cp35m-manylinux1_x86_64.whl (26.0 MB)
+Collecting humanfriendly>=9.1
+  Downloading humanfriendly-10.0-py2.py3-none-any.whl (86 kB)
+Collecting idna<3,>=2.5
+  Downloading idna-2.10-py2.py3-none-any.whl (58 kB)
+Collecting certifi>=2017.4.17
+  Downloading certifi-2021.10.8-py2.py3-none-any.whl (149 kB)
+Collecting urllib3<1.27,>=1.21.1
+  Downloading urllib3-1.26.9-py2.py3-none-any.whl (138 kB)
+Collecting chardet<5,>=3.0.2
+  Downloading chardet-4.0.0-py2.py3-none-any.whl (178 kB)
+Using legacy 'setup.py install' for networkx, since package 'wheel' is not installed.
+Using legacy 'setup.py install' for pyyaml, since package 'wheel' is not installed.
+Using legacy 'setup.py install' for lzstring, since package 'wheel' is not installed.
+Using legacy 'setup.py install' for multiqc, since package 'wheel' is not installed.
+Installing collected packages: decorator, six, setuptools, numpy, networkx, urllib3, pytz, python-dateutil, pyparsing, MarkupSafe, kiwisolver, idna, humanfriendly, future, cycler, colormath2, chardet, certifi, spectra, simplejson, scipy, requests, pyyaml, pandas, matplotlib, markdown, lzstring, jinja2, coloredlogs, click, seaborn, multiqc
+  Attempting uninstall: setuptools
+    Found existing installation: setuptools 28.8.0
+    Uninstalling setuptools-28.8.0:
+      Successfully uninstalled setuptools-28.8.0
+    Running setup.py install for networkx: started
+    Running setup.py install for networkx: finished with status 'done'
+    Running setup.py install for pyyaml: started
+    Running setup.py install for pyyaml: finished with status 'done'
+    Running setup.py install for lzstring: started
+    Running setup.py install for lzstring: finished with status 'done'
+    Running setup.py install for multiqc: started
+    Running setup.py install for multiqc: finished with status 'done'
+Successfully installed MarkupSafe-1.1.1 certifi-2021.10.8 chardet-4.0.0 click-7.1.2 coloredlogs-15.0.1 colormath2-3.0.3 cycler-0.10.0 decorator-5.1.1 future-1.0.0 humanfriendly-10.0 idna-2.10 jinja2-2.11.3 kiwisolver-1.1.0 lzstring-1.0.4 markdown-3.1.1 matplotlib-2.2.5 multiqc-1.9 networkx-2.2 numpy-1.16.6 pandas-0.25.3 pyparsing-2.4.7 python-dateutil-2.9.0.post0 pytz-2025.2 pyyaml-5.3.1 requests-2.25.1 scipy-1.4.1 seaborn-0.9.1 setuptools-50.3.2 simplejson-3.20.2 six-1.17.0 spectra-0.1.0 urllib3-1.26.9

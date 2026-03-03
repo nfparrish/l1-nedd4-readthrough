@@ -1,0 +1,17 @@
+[2026-03-03T01:55:12-05:00] Building STAR index
+  Genome:  /hpc/group/parrishlab/refs/GRCh38.primary_assembly.genome.fa
+  GTF:     /hpc/group/parrishlab/refs/gencode.v45.primary_assembly.annotation.gtf
+  Index:   /hpc/group/parrishlab/refs/star_GRCh38_v45_sjdb149
+  Overhang: 149
+[2026-03-03T01:55:12-05:00] Downloading GRCh38 primary assembly...
+[2026-03-03T01:57:31-05:00] Genome downloaded: 1.3G
+[2026-03-03T01:57:31-05:00] Downloading GENCODE v45 GTF...
+[2026-03-03T01:57:49-05:00] GTF downloaded: 185M
+[2026-03-03T01:57:49-05:00] Running STAR --runMode genomeGenerate...
+	STAR --runMode genomeGenerate --runThreadN 12 --genomeDir /hpc/group/parrishlab/refs/star_GRCh38_v45_sjdb149 --genomeFastaFiles /hpc/group/parrishlab/refs/GRCh38.primary_assembly.genome.fa --sjdbGTFfile /hpc/group/parrishlab/refs/gencode.v45.primary_assembly.annotation.gtf --sjdbOverhang 149
+	STAR version: 2.7.11a   compiled: 2023-10-11T14:19:54-04:00 dcc-login-02:/hpc/group/rescomp/tm103/storage/rhel8/STAR-2.7.11a/source
+Mar 03 01:57:49 ..... started STAR run
+Mar 03 01:57:49 ... starting to generate Genome files
+Mar 03 01:58:54 ..... processing annotations GTF
+Mar 03 01:59:35 ... starting to sort Suffix Array. This may take a long time...
+Mar 03 01:59:52 ... sorting Suffix Array chunks and saving them to disk...

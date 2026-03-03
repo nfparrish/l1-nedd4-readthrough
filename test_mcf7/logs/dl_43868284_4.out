@@ -1,0 +1,4 @@
+[2026-03-02T23:53:39-05:00] Downloading ERR973729 from ENA FTP
+  Already exists: /work/nfp8/MCF7_ctrl/fastq/ERR973729_1.fastq.gz
+  Already exists: /work/nfp8/MCF7_ctrl/fastq/ERR973729_2.fastq.gz
+[2026-03-02T23:53:39-05:00] Download complete: ERR973729
