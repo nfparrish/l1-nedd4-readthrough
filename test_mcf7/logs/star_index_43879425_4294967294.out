@@ -1,0 +1,11 @@
+[2026-03-03T17:45:02-05:00] Building STAR index
+  Genome:  /hpc/group/parrishlab/refs/GRCh38.primary_assembly.genome.fa
+  GTF:     /hpc/group/parrishlab/refs/gencode.v45.primary_assembly.annotation.gtf
+  Index:   /hpc/group/parrishlab/refs/star_GRCh38_v45_sjdb149
+  Overhang: 149
+[2026-03-03T17:45:02-05:00] STAR index already exists — skipping
+[2026-03-03T17:45:02-05:00] Extracting NEDD4 exon coordinates from GTF...
+  52 NEDD4 exon intervals written to /hpc/group/parrishlab/refs/nedd4_exons.bed
+[2026-03-03T17:45:07-05:00] Building background windows BED...
+  8 background windows retained after exon subtraction
+[2026-03-03T17:45:08-05:00] Done

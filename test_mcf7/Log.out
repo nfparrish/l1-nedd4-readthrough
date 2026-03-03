@@ -468,3 +468,40 @@ Writing 1189944072 bytes into /hpc/group/parrishlab/refs/star_GRCh38_v45_sjdb149
 Writing 1125442096 bytes into /hpc/group/parrishlab/refs/star_GRCh38_v45_sjdb149//SA_27 ; empty space on disk = 1035749818368 bytes ...Writing 962865880 bytes into /hpc/group/parrishlab/refs/star_GRCh38_v45_sjdb149//SA_29 ; empty space on disk = 1035749818368 bytes ... done
  done
 Writing 906245640 bytes into /hpc/group/parrishlab/refs/star_GRCh38_v45_sjdb149//SA_31 ; empty space on disk = 1033661054976 bytes ... done
+Writing 1124985856 bytes into /hpc/group/parrishlab/refs/star_GRCh38_v45_sjdb149//SA_30 ; empty space on disk = 1032755085312 bytes ... done
+Writing 1137023232 bytes into /hpc/group/parrishlab/refs/star_GRCh38_v45_sjdb149//SA_28 ; empty space on disk = 1031629963264 bytes ... done
+Writing 1033211528 bytes into /hpc/group/parrishlab/refs/star_GRCh38_v45_sjdb149//SA_32 ; empty space on disk = 1030493306880 bytes ... done
+Writing 1081161072 bytes into /hpc/group/parrishlab/refs/star_GRCh38_v45_sjdb149//SA_33 ; empty space on disk = 1029459410944 bytes ... done
+Writing 1166294904 bytes into /hpc/group/parrishlab/refs/star_GRCh38_v45_sjdb149//SA_35 ; empty space on disk = 1028378329088 bytes ... done
+Writing 966945312 bytes into /hpc/group/parrishlab/refs/star_GRCh38_v45_sjdb149//SA_38 ; empty space on disk = 1027212312576 bytes ... done
+Writing 1052221144 bytes into /hpc/group/parrishlab/refs/star_GRCh38_v45_sjdb149//SA_34 ; empty space on disk = 1026245525504 bytes ... done
+Writing 1107823144 bytes into /hpc/group/parrishlab/refs/star_GRCh38_v45_sjdb149//SA_36 ; empty space on disk = 1025192755200 bytes ... done
+Writing 726121360 bytes into /hpc/group/parrishlab/refs/star_GRCh38_v45_sjdb149//SA_42 ; empty space on disk = 1024085458944 bytes ... done
+Writing 1153584232 bytes into /hpc/group/parrishlab/refs/star_GRCh38_v45_sjdb149//SA_37 ; empty space on disk = 1023358795776 bytes ... done
+Writing 707534240 bytes into /hpc/group/parrishlab/refs/star_GRCh38_v45_sjdb149//SA_41 ; empty space on disk = 1022205362176 bytes ... done
+Writing 1035495448 bytes into /hpc/group/parrishlab/refs/star_GRCh38_v45_sjdb149//SA_40 ; empty space on disk = 1021497573376 bytes ... done
+Writing 1194680400 bytes into /hpc/group/parrishlab/refs/star_GRCh38_v45_sjdb149//SA_39 ; empty space on disk = 1020458434560 bytes ... done
+Mar 03 02:43:09 ... loading chunks from disk, packing SA...
+Mar 03 02:45:44 ... finished generating suffix array
+Mar 03 02:45:44 ... generating Suffix Array index
+Mar 03 02:56:37 ... completed Suffix Array index
+Mar 03 02:56:38   Finished preparing junctions
+Mar 03 02:56:38 ..... inserting junctions into the genome indices
+Mar 03 02:59:16   Finished SA search: number of new junctions=402606, old junctions=0
+Mar 03 03:00:56   Finished sorting SA indicesL nInd=239953152
+Genome size with junctions=3258767162  3138387968   120379194
+GstrandBit1=32   GstrandBit=32
+Mar 03 03:02:19   Finished inserting junction indices
+Mar 03 03:03:02   Finished SAi
+Mar 03 03:03:03 ..... finished inserting junctions into genome
+Mar 03 03:03:03 ... writing Genome to disk ...
+Writing 3258767162 bytes into /hpc/group/parrishlab/refs/star_GRCh38_v45_sjdb149//Genome ; empty space on disk = 1066420666368 bytes ... done
+SA size in bytes: 25315985734
+Mar 03 03:03:10 ... writing Suffix Array to disk ...
+Writing 25315985734 bytes into /hpc/group/parrishlab/refs/star_GRCh38_v45_sjdb149//SA ; empty space on disk = 1063161692160 bytes ... done
+Mar 03 03:04:38 ... writing SAindex to disk
+Writing 8 bytes into /hpc/group/parrishlab/refs/star_GRCh38_v45_sjdb149//SAindex ; empty space on disk = 1037845921792 bytes ... done
+Writing 120 bytes into /hpc/group/parrishlab/refs/star_GRCh38_v45_sjdb149//SAindex ; empty space on disk = 1037845921792 bytes ... done
+Writing 1565873491 bytes into /hpc/group/parrishlab/refs/star_GRCh38_v45_sjdb149//SAindex ; empty space on disk = 1037845921792 bytes ... done
+Mar 03 03:04:48 ..... finished successfully
+DONE: Genome generation, EXITING

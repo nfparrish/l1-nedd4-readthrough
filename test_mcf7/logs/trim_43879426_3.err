@@ -1,0 +1,7 @@
+TrimmomaticPE: Started with arguments:
+ -threads 4 /work/nfp8/MCF7_ctrl/fastq/ERR973728_1.fastq.gz /work/nfp8/MCF7_ctrl/fastq/ERR973728_2.fastq.gz /work/nfp8/MCF7_ctrl/fastq/ERR973728_1_trimmed_P.fq.gz /work/nfp8/MCF7_ctrl/fastq/ERR973728_1_trimmed_U.fq.gz /work/nfp8/MCF7_ctrl/fastq/ERR973728_2_trimmed_P.fq.gz /work/nfp8/MCF7_ctrl/fastq/ERR973728_2_trimmed_U.fq.gz ILLUMINACLIP:/opt/apps/rhel7/Trimmomatic-0.39/adapters/TruSeq3-PE.fa:2:30:10:2:keepBothReads LEADING:3 TRAILING:3 SLIDINGWINDOW:4:20 MINLEN:36
+Using PrefixPair: 'TACACTCTTTCCCTACACGACGCTCTTCCGATCT' and 'GTGACTGGAGTTCAGACGTGTGCTCTTCCGATCT'
+ILLUMINACLIP: Using 1 prefix pairs, 0 forward/reverse sequences, 0 forward only sequences, 0 reverse only sequences
+Quality encoding detected as phred33
+/var/spool/slurmd/job43879443/slurm_script: line 85: 4162261 Killed                  java -jar "$TRIMMOMATIC_JAR" PE -threads "$THREADS" "$R1" "$R2" "$TRIM_R1_PAIRED" "$TRIM_R1_UNPAIRED" "$TRIM_R2_PAIRED" "$TRIM_R2_UNPAIRED" ILLUMINACLIP:"${ADAPTERS_DIR}/TruSeq3-PE.fa":2:30:10:2:keepBothReads LEADING:3 TRAILING:3 SLIDINGWINDOW:4:${TRIM_QUALITY} MINLEN:${TRIM_MIN_LENGTH}
+slurmstepd: error: Detected 1 oom_kill event in StepId=43879443.batch. Some of the step tasks have been OOM Killed.

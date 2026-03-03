@@ -4,9 +4,9 @@
 #SBATCH --error=/work/nfp8/2026_03_02/GSE226189/logs/trim_%A_%a.err
 #SBATCH --partition=common
 #SBATCH --account=parrishlab
-#SBATCH --mem=8G
-#SBATCH -c 4
-#SBATCH --time=02:00:00
+#SBATCH --mem=48G
+#SBATCH -c 8
+#SBATCH --time=04:00:00
 #SBATCH --array=1-82
 set -euo pipefail
 
@@ -23,7 +23,7 @@ mkdir -p "$FASTQ_DIR"
 
 TRIMMOMATIC_JAR="$TRIMMOMATIC"
 ADAPTERS_DIR="$(dirname "$TRIMMOMATIC_JAR")/adapters"
-THREADS=4
+THREADS=8
 
 if [[ "$LIBRARY_LAYOUT" == "PE" ]]; then
     R1="${FASTQ_DIR}/${SRR}_1.fastq.gz"
