@@ -30,7 +30,8 @@ fi
 
 # Use venv Python directly (no activate script sourcing)
 "${VENV_DIR}/bin/pip" install --upgrade pip
-"${VENV_DIR}/bin/pip" install pandas matplotlib seaborn multiqc cutadapt
+# Note: cutadapt pinned to 4.x for compatibility with Trim Galore 0.4.3
+"${VENV_DIR}/bin/pip" install pandas matplotlib seaborn multiqc 'cutadapt>=3.7,<5'
 
 echo "[$(date -Is)] Python venv ready at ${VENV_DIR}"
 echo "  Packages: $(${VENV_DIR}/bin/pip list --format=columns 2>/dev/null | grep -iE 'pandas|matplotlib|seaborn|multiqc' | tr '\n' ' ')"
