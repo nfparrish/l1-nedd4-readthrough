@@ -114,7 +114,7 @@ DEP_ON="$JOB_ALIGN"
 JOB_POST=$(submit "post" "${PIPELINE_DIR}/03_post_align.sh" \
     --array=1-4 \
     --job-name=post_mcf7 \
-    --mem=64G -c 4 --time=02:00:00)
+    --mem=64G -c 4 --time=08:00:00)
 echo "[Step 3] Post-align (array 1-4): job ${JOB_POST}"
 DEP_ON="$JOB_POST"
 

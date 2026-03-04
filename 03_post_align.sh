@@ -6,7 +6,7 @@
 #SBATCH --account=parrishlab
 #SBATCH --mem=64G
 #SBATCH -c 4
-#SBATCH --time=02:00:00
+#SBATCH --time=08:00:00
 #SBATCH --array=1-82
 set -euo pipefail
 
@@ -97,7 +97,7 @@ if [[ ! -f "$RT_DEPTH" ]]; then
 
         samtools merge -f "$MERGED" "$R2FWD" "$R1REV"
         samtools sort "$MERGED" -o "${MERGED%.bam}_sorted.bam"
-        samtools depth -a -d 0 "${MERGED%.bam}_sorted.bam" > "$RT_DEPTH"
+        samtools depth -a -d 0 -r "$RT_WINDOW" "${MERGED%.bam}_sorted.bam" > "$RT_DEPTH"
         rm -f "$R2FWD" "$R1REV" "$MERGED" "${MERGED%.bam}_sorted.bam"
     fi
 
