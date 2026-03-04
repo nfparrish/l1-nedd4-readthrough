@@ -4,7 +4,7 @@
 #SBATCH --error=/work/nfp8/2026_03_02/GSE226189/logs/post_%A_%a.err
 #SBATCH --partition=common
 #SBATCH --account=parrishlab
-#SBATCH --mem=16G
+#SBATCH --mem=64G
 #SBATCH -c 4
 #SBATCH --time=02:00:00
 #SBATCH --array=1-82

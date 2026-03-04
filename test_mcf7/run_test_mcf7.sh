@@ -106,7 +106,7 @@ JOB_ALIGN=$(submit_dep2 "align" "${JOB_IDX}:${JOB_TRIM}" \
     "${PIPELINE_DIR}/02_align_star.sh" \
     --array=1-4 \
     --job-name=align_mcf7 \
-    --mem=36G -c 8 --time=06:00:00)
+    --mem=64G -c 8 --time=06:00:00)
 echo "[Step 2] Align (array 1-4): job ${JOB_ALIGN}"
 DEP_ON="$JOB_ALIGN"
 
@@ -114,7 +114,7 @@ DEP_ON="$JOB_ALIGN"
 JOB_POST=$(submit "post" "${PIPELINE_DIR}/03_post_align.sh" \
     --array=1-4 \
     --job-name=post_mcf7 \
-    --mem=16G -c 4 --time=02:00:00)
+    --mem=64G -c 4 --time=02:00:00)
 echo "[Step 3] Post-align (array 1-4): job ${JOB_POST}"
 DEP_ON="$JOB_POST"
 

@@ -4,7 +4,7 @@
 #SBATCH --error=/work/nfp8/2026_03_02/GSE226189/logs/align_%A_%a.err
 #SBATCH --partition=common
 #SBATCH --account=parrishlab
-#SBATCH --mem=36G
+#SBATCH --mem=64G
 #SBATCH -c 8
 #SBATCH --time=06:00:00
 # Array range set dynamically by launcher; fallback:
