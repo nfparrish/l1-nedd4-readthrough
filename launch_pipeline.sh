@@ -131,7 +131,7 @@ fi
 # ── Step 3: Post-alignment QC (array) ─────────────────────────────────────
 if [[ $FROM_STEP -le 3 ]]; then
     JOB_POST=$(submit "${SCRIPT_DIR}/03_post_align.sh" \
-        --array="1-${NUM_SAMPLES}%32")
+        --array="1-${NUM_SAMPLES}%16")
     echo "[Step 3] Post-align QC (array 1-${NUM_SAMPLES}): job ${JOB_POST}"
     DEP_ON="$JOB_POST"
 fi
