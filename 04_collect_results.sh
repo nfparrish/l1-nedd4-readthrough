@@ -84,7 +84,8 @@ with open(SRR_LIST) as f:
 
 results = []
 for srr in srrs:
-    rt_file = os.path.join(COVERAGE_DIR, f"{srr}_readthrough.depth")
+    rt_file       = os.path.join(COVERAGE_DIR, f"{srr}_readthrough.depth")
+    rt_minus_file = os.path.join(COVERAGE_DIR, f"{srr}_readthrough_minus.depth")
     fs_file = os.path.join(COVERAGE_DIR, f"{srr}_flagstat.txt")
     bg_file = os.path.join(COVERAGE_DIR, f"{srr}_background.depth")
 
@@ -92,10 +93,17 @@ for srr in srrs:
         print(f"  SKIP {srr}: missing depth or flagstat", file=sys.stderr)
         continue
 
-    # Read-through mean depth
+    # Read-through mean depth (plus strand for stranded; all reads for unstranded)
     rt = pd.read_csv(rt_file, sep="\t", header=None, names=["chr","pos","depth"])
     rt_mean = rt["depth"].mean() if len(rt) > 0 else 0.0
     rt_max  = int(rt["depth"].max()) if len(rt) > 0 else 0
+
+    # Minus-strand depth (sanity control / NEDD4 intron retention proxy)
+    rt_minus_mean = None
+    rt_minus_cpm  = None
+    if os.path.exists(rt_minus_file):
+        rtm = pd.read_csv(rt_minus_file, sep="\t", header=None, names=["chr","pos","depth"])
+        rt_minus_mean = rtm["depth"].mean() if len(rtm) > 0 else 0.0
 
     # Total primary mapped reads from flagstat (CPM denominator)
     total_mapped = 0
@@ -112,6 +120,8 @@ for srr in srrs:
                 break
 
     rt_cpm = (rt_mean / total_mapped) * 1e6 if total_mapped > 0 else 0.0
+    if rt_minus_mean is not None and total_mapped > 0:
+        rt_minus_cpm = (rt_minus_mean / total_mapped) * 1e6
 
     # Background flanking window mean depth (NEDD4 exons excluded)
     bg_mean = None
@@ -125,22 +135,24 @@ for srr in srrs:
             rt_bg_fold = rt_mean / bg_mean if bg_mean > 0 else None
 
     results.append({
-        "srr":            srr,
-        "rt_window":      RT_WINDOW,
-        "rt_mean_depth":  round(rt_mean, 4),
-        "rt_max_depth":   rt_max,
-        "total_mapped":   total_mapped,
-        "rt_cpm":         round(rt_cpm, 6),
-        "bg_mean_depth":  round(bg_mean, 4) if bg_mean is not None else None,
-        "rt_bg_fold":     round(rt_bg_fold, 4) if rt_bg_fold is not None else None,
-        "rt_bg_log2fold": round(np.log2(rt_bg_fold), 4) if rt_bg_fold is not None and rt_bg_fold > 0 else None,
+        "srr":                 srr,
+        "rt_window":           RT_WINDOW,
+        "rt_mean_depth":       round(rt_mean, 4),
+        "rt_max_depth":        rt_max,
+        "total_mapped":        total_mapped,
+        "rt_cpm":              round(rt_cpm, 6),
+        "rt_minus_mean_depth": round(rt_minus_mean, 4) if rt_minus_mean is not None else None,
+        "rt_minus_cpm":        round(rt_minus_cpm, 6) if rt_minus_cpm is not None else None,
+        "bg_mean_depth":       round(bg_mean, 4) if bg_mean is not None else None,
+        "rt_bg_fold":          round(rt_bg_fold, 4) if rt_bg_fold is not None else None,
+        "rt_bg_log2fold":      round(np.log2(rt_bg_fold), 4) if rt_bg_fold is not None and rt_bg_fold > 0 else None,
     })
 
 df = pd.DataFrame(results)
 out_csv = os.path.join(RESULTS_DIR, "readthrough_signal.csv")
 df.to_csv(out_csv, index=False)
 print(f"Wrote {len(df)} samples to {out_csv}")
-print(df[["srr","rt_mean_depth","total_mapped","rt_cpm","bg_mean_depth","rt_bg_fold"]].to_string(index=False))
+print(df[["srr","rt_mean_depth","rt_cpm","rt_minus_mean_depth","rt_minus_cpm","bg_mean_depth","rt_bg_fold"]].to_string(index=False))
 PYEOF
 
 echo "[$(date -Is)] Read-through CSV done"

@@ -73,6 +73,15 @@ export TRIM_MIN_LENGTH=36       # discard reads shorter than this post-trim
 # 0=unstranded  1=forward (fr-secondstrand)  2=reverse (fr-firststrand/TruSeq)
 # Set automatically in 03_post_align.sh from $STRANDEDNESS
 
+# --- featureCounts scope ---
+# SKIP   = skip featureCounts entirely
+# PANEL  = ~100 housekeeping genes only (fast; useful for QC / normalization)
+# CHR15  = all chr15 genes (good balance for NEDD4-focused analysis)
+# GENOME = full annotation, all chromosomes (default; most complete)
+export FC_SCOPE="GENOME"
+export FC_PANEL_GTF="${REF_DIR}/housekeeping_panel.gtf"
+export FC_CHR15_GTF="${REF_DIR}/gencode.v45.chr15.gtf"
+
 # --- Background windows for RT CPM flanking normalization ---
 # 10 × 1 kb intronic windows: 5 upstream and 5 downstream of L1, verified within NEDD4 intron 19
 # Exon positions are subtracted at runtime via bedtools using NEDD4_EXONS_BED.

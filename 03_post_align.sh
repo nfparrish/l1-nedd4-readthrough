@@ -106,6 +106,59 @@ if [[ ! -f "$RT_DEPTH" ]]; then
 fi
 
 # ===========================================================================
+# 3b. Minus-strand read-through window depth — sanity control + NEDD4 intron
+#     retention signal.  Mirrors step 3 flag logic but selects minus-strand RNA.
+#
+#   STRANDEDNESS="reverse" (fr-firststrand): minus-strand RNA reads are
+#     - R1 forward (flag: read1 [0x40] + NOT reverse [NOT 0x10]) -> minus-strand RNA
+#     - R2 reverse (flag: read2 [0x80] + reverse [0x10] = 0x90)  -> minus-strand RNA
+#
+#   STRANDEDNESS="forward" (fr-secondstrand): minus-strand RNA reads are
+#     - R1 reverse (flag: read1 [0x40] + reverse [0x10] = 0x50)  -> minus-strand RNA
+#     - R2 forward (flag: read2 [0x80] + NOT reverse [NOT 0x10]) -> minus-strand RNA
+#
+#   STRANDEDNESS="unstranded": reads aligning to minus genomic orientation
+#     (flag 0x10 set); not interpretable as RNA strand-of-origin but useful
+#     as a proxy for minus-strand coverage at this locus.
+# ===========================================================================
+RT_MINUS_DEPTH="${COVERAGE_DIR}/${SRR}_readthrough_minus.depth"
+if [[ ! -f "$RT_MINUS_DEPTH" ]]; then
+    echo "  [3b] Computing minus-strand read-through depth (${STRANDEDNESS} library)..."
+
+    if [[ "$STRANDEDNESS" == "unstranded" ]]; then
+        MMINUS="${TMP_DIR}/${SRR}_minus_all.bam"
+        samtools view -bh -q 255 -f 16 "$DEDUP_BAM" "$RT_WINDOW" \
+            | samtools sort -T "${TMP_DIR}/sort_minus_${SRR}" - -o "$MMINUS"
+        samtools index "$MMINUS"
+        samtools depth -a -d 0 -r "$RT_WINDOW" "$MMINUS" > "$RT_MINUS_DEPTH"
+        rm -f "$MMINUS" "${MMINUS}.bai" || true
+
+    else
+        MR1="${TMP_DIR}/${SRR}_minus_r1.bam"
+        MR2="${TMP_DIR}/${SRR}_minus_r2.bam"
+        MMERGED="${TMP_DIR}/${SRR}_minus_strand.bam"
+
+        if [[ "$STRANDEDNESS" == "reverse" ]]; then
+            # fr-firststrand: minus-strand RNA -> R1 forward + R2 reverse
+            samtools view -bh -q 255 -f  64 -F 16 "$DEDUP_BAM" "$RT_WINDOW" > "$MR1"
+            samtools view -bh -q 255 -f 144       "$DEDUP_BAM" "$RT_WINDOW" > "$MR2"
+        else
+            # fr-secondstrand: minus-strand RNA -> R1 reverse + R2 forward
+            samtools view -bh -q 255 -f  80       "$DEDUP_BAM" "$RT_WINDOW" > "$MR1"
+            samtools view -bh -q 255 -f 128 -F 16 "$DEDUP_BAM" "$RT_WINDOW" > "$MR2"
+        fi
+
+        samtools merge -f "$MMERGED" "$MR1" "$MR2"
+        samtools sort "$MMERGED" -o "${MMERGED%.bam}_sorted.bam"
+        samtools index "${MMERGED%.bam}_sorted.bam"
+        samtools depth -a -d 0 -r "$RT_WINDOW" "${MMERGED%.bam}_sorted.bam" > "$RT_MINUS_DEPTH"
+        rm -f "$MR1" "$MR2" "$MMERGED" "${MMERGED%.bam}_sorted.bam" "${MMERGED%.bam}_sorted.bam.bai" || true
+    fi
+
+    echo "    RT minus: $(wc -l < "$RT_MINUS_DEPTH") positions | $(awk '{s+=$3} END{printf "mean depth=%.3f", s/NR}' "$RT_MINUS_DEPTH")"
+fi
+
+# ===========================================================================
 # 4. Background window depth (same strand logic; flanking normalization in Step 4)
 #    BACKGROUND_WINDOWS_BED built by 01_build_star_index.sh (NEDD4 exons subtracted)
 # ===========================================================================
@@ -154,28 +207,46 @@ fi
 
 # ===========================================================================
 # 6. featureCounts gene quantification (strand-aware, PE-aware)
-#    Retained alongside STAR GeneCounts; use featureCounts for final gene expression.
+#    FC_SCOPE (set in config.sh) controls what annotation is used:
+#      SKIP   — skip featureCounts entirely
+#      PANEL  — ~100 housekeeping genes (FC_PANEL_GTF); fast, good for QC/normalization
+#      CHR15  — all chr15 genes (FC_CHR15_GTF); good balance for NEDD4-focused runs
+#      GENOME — full GENCODE annotation (GENCODE_GTF); default, most complete
 # ===========================================================================
+FC_SCOPE="${FC_SCOPE:-GENOME}"
 FC_OUT="${COUNTS_DIR}/${SRR}_featureCounts.txt"
-if [[ ! -f "$FC_OUT" ]]; then
-    echo "  [6] Running featureCounts..."
 
-    FC_STRAND=0
-    [[ "$STRANDEDNESS" == "forward" ]] && FC_STRAND=1
-    [[ "$STRANDEDNESS" == "reverse" ]] && FC_STRAND=2
+if [[ "$FC_SCOPE" == "SKIP" ]]; then
+    echo "  [6] featureCounts SKIP (FC_SCOPE=SKIP)"
+elif [[ ! -f "$FC_OUT" ]]; then
+    echo "  [6] Running featureCounts (FC_SCOPE=${FC_SCOPE})..."
 
-    FC_FLAGS="-T ${STAR_THREADS} -a ${GENCODE_GTF} -s ${FC_STRAND}"
-    [[ "$LIBRARY_LAYOUT" == "PE" ]] && FC_FLAGS="${FC_FLAGS} -p --countReadPairs -B"
+    case "$FC_SCOPE" in
+        PANEL)  FC_GTF="${FC_PANEL_GTF:-${REF_DIR}/housekeeping_panel.gtf}" ;;
+        CHR15)  FC_GTF="${FC_CHR15_GTF:-${REF_DIR}/gencode.v45.chr15.gtf}" ;;
+        GENOME) FC_GTF="${GENCODE_GTF}" ;;
+        *)      echo "  WARNING: unknown FC_SCOPE=${FC_SCOPE}, defaulting to GENOME" >&2
+                FC_GTF="${GENCODE_GTF}" ;;
+    esac
 
-    featureCounts \
-        ${FC_FLAGS} \
-        -o "$FC_OUT" \
-        "$DEDUP_BAM" \
-        2> "${COUNTS_DIR}/${SRR}_featureCounts.log"
+    if [[ ! -f "$FC_GTF" ]]; then
+        echo "  WARNING: GTF not found: $FC_GTF — skipping featureCounts" >&2
+    else
+        FC_STRAND=0
+        [[ "$STRANDEDNESS" == "forward" ]] && FC_STRAND=1
+        [[ "$STRANDEDNESS" == "reverse" ]] && FC_STRAND=2
 
-    echo "    featureCounts: $(grep 'Assigned' "${COUNTS_DIR}/${SRR}_featureCounts.log" | tail -1 || echo 'see log')"
-fi
+        FC_FLAGS="-T ${STAR_THREADS} -a ${FC_GTF} -s ${FC_STRAND}"
+        [[ "$LIBRARY_LAYOUT" == "PE" ]] && FC_FLAGS="${FC_FLAGS} -p --countReadPairs -B"
 
+        featureCounts \
+            ${FC_FLAGS} \
+            -o "$FC_OUT" \
+            "$DEDUP_BAM" \
+            2> "${COUNTS_DIR}/${SRR}_featureCounts.log"
+
+        echo "    featureCounts: $(grep 'Assigned' "${COUNTS_DIR}/${SRR}_featureCounts.log" | tail -1 || echo 'see log')"
+    fi
 # ===========================================================================
 # 7. Copy STAR GeneCounts to counts dir (retain both quantification methods)
 # ===========================================================================
