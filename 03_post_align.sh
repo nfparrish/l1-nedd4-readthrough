@@ -99,7 +99,7 @@ if [[ ! -f "$RT_DEPTH" ]]; then
         samtools sort "$MERGED" -o "${MERGED%.bam}_sorted.bam"
         samtools index "${MERGED%.bam}_sorted.bam"
         samtools depth -a -d 0 -r "$RT_WINDOW" "${MERGED%.bam}_sorted.bam" > "$RT_DEPTH"
-        rm -f "$R2FWD" "$R1REV" "$MERGED" "${MERGED%.bam}_sorted.bam" "${MERGED%.bam}_sorted.bam.bai"
+        rm -f "$R2FWD" "$R1REV" "$MERGED" "${MERGED%.bam}_sorted.bam" "${MERGED%.bam}_sorted.bam.bai" || true
     fi
 
     echo "    RT window: $(wc -l < "$RT_DEPTH") positions | $(awk '{s+=$3} END{printf "mean depth=%.3f", s/NR}' "$RT_DEPTH")"
@@ -133,7 +133,7 @@ if [[ ! -f "$BG_DEPTH" && -f "${BACKGROUND_WINDOWS_BED}" ]]; then
         samtools sort "$MERGED" -o "${MERGED%.bam}_sorted.bam"
         samtools index "${MERGED%.bam}_sorted.bam"
         samtools depth -a -d 0 -b "$BACKGROUND_WINDOWS_BED" "${MERGED%.bam}_sorted.bam" > "$BG_DEPTH"
-        rm -f "$R2FWD" "$R1REV" "$MERGED" "${MERGED%.bam}_sorted.bam" "${MERGED%.bam}_sorted.bam.bai"
+        rm -f "$R2FWD" "$R1REV" "$MERGED" "${MERGED%.bam}_sorted.bam" "${MERGED%.bam}_sorted.bam.bai" || true
     fi
 
     echo "    Background: $(wc -l < "$BG_DEPTH") positions | $(awk '{s+=$3} END{printf "mean depth=%.3f", s/NR}' "$BG_DEPTH")"
