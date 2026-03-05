@@ -23,7 +23,9 @@
 set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
-source "${SCRIPT_DIR}/config.sh"
+# Allow overriding config (e.g. for MCF7 test run); default to pipeline config.sh
+PIPELINE_CONFIG="${PIPELINE_CONFIG:-${SCRIPT_DIR}/config.sh}"
+source "${PIPELINE_CONFIG}"
 
 # ── Parse arguments ────────────────────────────────────────────────────────
 AFTER_JOB=""
@@ -53,7 +55,7 @@ submit() {
         dep_flag="--dependency=afterok:${DEP_ON}"
     fi
     local jid
-    jid=$(sbatch $dep_flag "$@" "$script" | awk '{print $NF}')
+    jid=$(sbatch $dep_flag --export=ALL,PIPELINE_CONFIG="${PIPELINE_CONFIG}" "$@" "$script" | awk '{print $NF}')
     echo "$jid"
 }
 
@@ -62,7 +64,7 @@ submit_dep() {
     local dep_str="$1" script="$2"
     shift 2
     local jid
-    jid=$(sbatch --dependency="afterok:${dep_str}" "$@" "$script" | awk '{print $NF}')
+    jid=$(sbatch --dependency="afterok:${dep_str}" --export=ALL,PIPELINE_CONFIG="${PIPELINE_CONFIG}" "$@" "$script" | awk '{print $NF}')
     echo "$jid"
 }
 
@@ -122,6 +124,7 @@ if [[ $FROM_STEP -le 2 ]]; then
             --array="1-${NUM_SAMPLES}%16")
     else
         JOB_ALIGN=$(sbatch --array="1-${NUM_SAMPLES}%16" \
+            --export=ALL,PIPELINE_CONFIG="${PIPELINE_CONFIG}" \
             "${SCRIPT_DIR}/02_align_star.sh" | awk '{print $NF}')
     fi
     echo "[Step 2] STAR align (array 1-${NUM_SAMPLES}): job ${JOB_ALIGN}"

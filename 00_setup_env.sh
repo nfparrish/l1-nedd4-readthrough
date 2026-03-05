@@ -87,9 +87,9 @@ if [[ -f "${GENCODE_GTF}" && ! -f "${FC_PANEL_GTF}" ]]; then
         # Stress / UPR transcription factors
         ATF4 ATF6 XBP1 DDIT3
     )
-    # Build grep pattern matching gene_name "SYMBOL" in GTF attribute field
-    PATTERN=$(printf 'gene_name "%s"\\|' "${PANEL_GENES[@]}" | sed 's/\\|$//')
-    { grep '^#' "${GENCODE_GTF}"; grep -E "${PATTERN}" "${GENCODE_GTF}"; } > "${FC_PANEL_GTF}"
+    # Build grep pattern: gene_name "(ACTB|GAPDH|...)" in ERE (plain | = alternation)
+    PATTERN=$(printf '%s\n' "${PANEL_GENES[@]}" | paste -sd'|' -)
+    { grep '^#' "${GENCODE_GTF}"; grep -E "gene_name \"(${PATTERN})\"" "${GENCODE_GTF}"; } > "${FC_PANEL_GTF}"
     echo "  Panel GTF: ${#PANEL_GENES[@]} genes -> $(grep -vc '^#' "${FC_PANEL_GTF}") features -> ${FC_PANEL_GTF}"
 fi
 
