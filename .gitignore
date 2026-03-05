@@ -1,0 +1,10 @@
+# SLURM log files
+logs/
+test_mcf7/logs/
+**/logs/*.err
+**/logs/*.out
+
+# Scratch scripts
+test_mcf7/align_single_fasttest.sh
+test_mcf7/run_fasttest.sh
+test_mcf7/run_fasttest_v2.sh
