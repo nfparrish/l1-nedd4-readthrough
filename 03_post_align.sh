@@ -247,6 +247,7 @@ elif [[ ! -f "$FC_OUT" ]]; then
 
         echo "    featureCounts: $(grep 'Assigned' "${COUNTS_DIR}/${SRR}_featureCounts.log" | tail -1 || echo 'see log')"
     fi
+fi
 # ===========================================================================
 # 7. Copy STAR GeneCounts to counts dir (retain both quantification methods)
 # ===========================================================================
