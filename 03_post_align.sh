@@ -214,7 +214,8 @@ fi
 #      GENOME — full GENCODE annotation (GENCODE_GTF); default, most complete
 # ===========================================================================
 FC_SCOPE="${FC_SCOPE:-GENOME}"
-FC_OUT="${COUNTS_DIR}/${SRR}_featureCounts.txt"
+# Scope-tagged filename lets GENOME and PANEL outputs coexist on disk
+FC_OUT="${COUNTS_DIR}/${SRR}_featureCounts_${FC_SCOPE}.txt"
 
 if [[ "$FC_SCOPE" == "SKIP" ]]; then
     echo "  [6] featureCounts SKIP (FC_SCOPE=SKIP)"

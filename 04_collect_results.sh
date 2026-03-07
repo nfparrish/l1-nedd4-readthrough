@@ -167,13 +167,14 @@ import pandas as pd
 COUNTS_DIR  = os.environ["COUNTS_DIR"]
 SRR_LIST    = os.environ["SRR_LIST"]
 RESULTS_DIR = os.environ["RESULTS_DIR"]
+FC_SCOPE    = os.environ.get("FC_SCOPE", "GENOME")
 
 with open(SRR_LIST) as f:
     srrs = [line.strip() for line in f if line.strip()]
 
 counts = {}
 for srr in srrs:
-    fc_file = os.path.join(COUNTS_DIR, f"{srr}_featureCounts.txt")
+    fc_file = os.path.join(COUNTS_DIR, f"{srr}_featureCounts_{FC_SCOPE}.txt")
     if not os.path.exists(fc_file):
         print(f"  SKIP {srr}: no featureCounts file", file=sys.stderr)
         continue

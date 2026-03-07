@@ -78,7 +78,7 @@ export TRIM_MIN_LENGTH=36       # discard reads shorter than this post-trim
 # PANEL  = ~100 housekeeping genes only (fast; useful for QC / normalization)
 # CHR15  = all chr15 genes (good balance for NEDD4-focused analysis)
 # GENOME = full annotation, all chromosomes (default; most complete)
-export FC_SCOPE="GENOME"
+export FC_SCOPE="${FC_SCOPE:-GENOME}"  # respect override from --export
 export FC_PANEL_GTF="${REF_DIR}/housekeeping_panel.gtf"
 export FC_CHR15_GTF="${REF_DIR}/gencode.v45.chr15.gtf"
 
