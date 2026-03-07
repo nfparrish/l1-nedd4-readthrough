@@ -254,7 +254,9 @@ mkdir -p "${R_LIBS_USER}"
 Rscript - <<'REOF'
 r_libs <- Sys.getenv("R_LIBS_USER", unset=file.path(Sys.getenv("HOME"), "R", "libs"))
 dir.create(r_libs, showWarnings=FALSE, recursive=TRUE)
-.libPaths(c(r_libs, .libPaths()))
+# Include system R library so module-installed Bioconductor packages are visible
+sys_lib <- "/admin/apps/rhel9/R-4.4.3/lib64/R/library"
+.libPaths(c(r_libs, sys_lib, .libPaths()))
 
 suppressPackageStartupMessages({
     if (!requireNamespace("edgeR", quietly = TRUE)) {
