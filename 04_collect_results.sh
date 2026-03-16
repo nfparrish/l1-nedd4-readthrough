@@ -82,10 +82,20 @@ RT_WINDOW    = os.environ["RT_WINDOW"]
 with open(SRR_LIST) as f:
     srrs = [line.strip() for line in f if line.strip()]
 
+
+def mean_depth(path: str):
+    if not os.path.exists(path):
+        return None
+    df = pd.read_csv(path, sep="\t", header=None, names=["chr", "pos", "depth"])
+    return df["depth"].mean() if len(df) > 0 else 0.0
+
 results = []
+paper_results = []
 for srr in srrs:
     rt_file       = os.path.join(COVERAGE_DIR, f"{srr}_readthrough.depth")
     rt_minus_file = os.path.join(COVERAGE_DIR, f"{srr}_readthrough_minus.depth")
+    paper_sense_file = os.path.join(COVERAGE_DIR, f"{srr}_paper_downstream_sense.depth")
+    paper_antisense_file = os.path.join(COVERAGE_DIR, f"{srr}_paper_upstream_antisense.depth")
     fs_file = os.path.join(COVERAGE_DIR, f"{srr}_flagstat.txt")
     bg_file = os.path.join(COVERAGE_DIR, f"{srr}_background.depth")
 
@@ -99,13 +109,13 @@ for srr in srrs:
     rt_max  = int(rt["depth"].max()) if len(rt) > 0 else 0
 
     # Minus-strand depth (sanity control / NEDD4 intron retention proxy)
-    rt_minus_mean = None
-    rt_minus_cpm  = None
+    same_window_minus_mean = None
+    same_window_minus_cpm  = None
     if os.path.exists(rt_minus_file):
         rtm = pd.read_csv(rt_minus_file, sep="\t", header=None, names=["chr","pos","depth"])
-        rt_minus_mean = rtm["depth"].mean() if len(rtm) > 0 else 0.0
+        same_window_minus_mean = rtm["depth"].mean() if len(rtm) > 0 else 0.0
 
-    # Total primary mapped reads from flagstat (CPM denominator)
+    # Total primary mapped reads from flagstat (CPM denominator for RT windows)
     total_mapped = 0
     with open(fs_file) as fh:
         lines = fh.readlines()
@@ -119,9 +129,29 @@ for srr in srrs:
                 total_mapped = int(line.split()[0])
                 break
 
+    # Paper-style CPM denominator: total R1 reads with MAPQ>=20 (matches Philippe et al.)
+    r1_count_file = os.path.join(COVERAGE_DIR, f"{srr}_r1_mapq20_count.txt")
+    r1_mapped = 0
+    if os.path.exists(r1_count_file):
+        try:
+            r1_mapped = int(open(r1_count_file).read().strip())
+        except ValueError:
+            pass
+    # Fall back to total_mapped if R1 count not available
+    paper_denom = r1_mapped if r1_mapped > 0 else total_mapped
+
     rt_cpm = (rt_mean / total_mapped) * 1e6 if total_mapped > 0 else 0.0
-    if rt_minus_mean is not None and total_mapped > 0:
-        rt_minus_cpm = (rt_minus_mean / total_mapped) * 1e6
+    if same_window_minus_mean is not None and total_mapped > 0:
+        same_window_minus_cpm = (same_window_minus_mean / total_mapped) * 1e6
+
+    paper_downstream_mean = mean_depth(paper_sense_file)
+    paper_upstream_antisense_mean = mean_depth(paper_antisense_file)
+    paper_downstream_cpm = None
+    paper_upstream_antisense_cpm = None
+    if paper_downstream_mean is not None and paper_denom > 0:
+        paper_downstream_cpm = (paper_downstream_mean / paper_denom) * 1e6
+    if paper_upstream_antisense_mean is not None and paper_denom > 0:
+        paper_upstream_antisense_cpm = (paper_upstream_antisense_mean / paper_denom) * 1e6
 
     # Background flanking window mean depth (NEDD4 exons excluded)
     bg_mean = None
@@ -141,18 +171,35 @@ for srr in srrs:
         "rt_max_depth":        rt_max,
         "total_mapped":        total_mapped,
         "rt_cpm":              round(rt_cpm, 6),
-        "rt_minus_mean_depth": round(rt_minus_mean, 4) if rt_minus_mean is not None else None,
-        "rt_minus_cpm":        round(rt_minus_cpm, 6) if rt_minus_cpm is not None else None,
+        "same_window_minus_mean_depth": round(same_window_minus_mean, 4) if same_window_minus_mean is not None else None,
+        "same_window_minus_cpm":        round(same_window_minus_cpm, 6) if same_window_minus_cpm is not None else None,
         "bg_mean_depth":       round(bg_mean, 4) if bg_mean is not None else None,
         "rt_bg_fold":          round(rt_bg_fold, 4) if rt_bg_fold is not None else None,
         "rt_bg_log2fold":      round(np.log2(rt_bg_fold), 4) if rt_bg_fold is not None and rt_bg_fold > 0 else None,
+    })
+
+    paper_results.append({
+        "srr": srr,
+        "paper_downstream_window": os.environ.get("PAPER_DOWNSTREAM_WINDOW", RT_WINDOW),
+        "paper_upstream_window": os.environ.get("PAPER_UPSTREAM_WINDOW", ""),
+        "paper_downstream_sense_mean_depth": round(paper_downstream_mean, 4) if paper_downstream_mean is not None else None,
+        "paper_downstream_sense_cpm": round(paper_downstream_cpm, 6) if paper_downstream_cpm is not None else None,
+        "paper_upstream_antisense_mean_depth": round(paper_upstream_antisense_mean, 4) if paper_upstream_antisense_mean is not None else None,
+        "paper_upstream_antisense_cpm": round(paper_upstream_antisense_cpm, 6) if paper_upstream_antisense_cpm is not None else None,
     })
 
 df = pd.DataFrame(results)
 out_csv = os.path.join(RESULTS_DIR, "readthrough_signal.csv")
 df.to_csv(out_csv, index=False)
 print(f"Wrote {len(df)} samples to {out_csv}")
-print(df[["srr","rt_mean_depth","rt_cpm","rt_minus_mean_depth","rt_minus_cpm","bg_mean_depth","rt_bg_fold"]].to_string(index=False))
+print(df[["srr","rt_mean_depth","rt_cpm","same_window_minus_mean_depth","same_window_minus_cpm","bg_mean_depth","rt_bg_fold"]].to_string(index=False))
+
+paper_df = pd.DataFrame(paper_results)
+paper_out_csv = os.path.join(RESULTS_DIR, "paper_style_signal.csv")
+paper_df.to_csv(paper_out_csv, index=False)
+print(f"Wrote {len(paper_df)} samples to {paper_out_csv}")
+if not paper_df.empty:
+    print(paper_df[["srr","paper_downstream_sense_mean_depth","paper_upstream_antisense_mean_depth"]].to_string(index=False))
 PYEOF
 
 echo "[$(date -Is)] Read-through CSV done"

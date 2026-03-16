@@ -3,6 +3,17 @@ logs/
 test_mcf7/logs/
 **/logs/*.err
 **/logs/*.out
+slurm-*.out
+test_mcf7/slurm-*.out
+
+# Python cache
+__pycache__/
+**/__pycache__/
+*.pyc
+
+# Generated outputs (large/binary)
+test_mcf7/*.png
+test_mcf7/*.html
 
 # Scratch scripts
 test_mcf7/align_single_fasttest.sh

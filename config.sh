@@ -60,6 +60,10 @@ export MOD_BEDTOOLS="Bedtools/2.30.0"
 # L1-NEDD4 insertion breakpoint: chr15:55,958,934–55,958,936 (plus strand)
 # Read-through window: 1 kb downstream of L1 3' breakpoint on + strand
 export RT_WINDOW="chr15:55958936-55959936"
+export L1_BREAKPOINT_CHR="chr15"
+export L1_BREAKPOINT_3P=55958936
+export PAPER_DOWNSTREAM_WINDOW="${RT_WINDOW}"
+export PAPER_UPSTREAM_WINDOW="chr15:55957935-55958935"
 export BAM_SUBSET_REGION="chr15:54958936-56959936"   # NEDD4 locus ±1 Mb
 
 # Proxy SNP (for annotation only — NOT for window placement)

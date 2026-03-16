@@ -6,7 +6,9 @@ Run within the venv (pandas, matplotlib, seaborn required).
 Generates figures:
   1. Strip-plot of read-through CPM across samples
   2. Per-base coverage across the 1 kb read-through window
-  3. Summary statistics table
+    3. Ranked bar plot of read-through CPM
+    4. Paper-style downstream/upstream summaries when available
+    5. Summary statistics table
 
 Usage (executed by SLURM or interactively):
   source /hpc/group/parrishlab/envs/l1nedd4_py39/bin/activate
@@ -15,7 +17,7 @@ Usage (executed by SLURM or interactively):
                           --rt-window chr15:55958936-55959936 \
                           --output-dir   /hpc/group/parrishlab/L1_NEDD4/results/GSE226189/figures
 """
-import argparse, os, sys, glob
+import argparse, os, sys
 import pandas as pd
 import numpy as np
 import matplotlib
@@ -115,8 +117,63 @@ def fig_ranked_bar(df, out_dir, gse):
     plt.close(fig)
     print(f"  Saved: {path}")
 
+
+def fig_paper_style(df, out_dir, gse):
+    value_cols = [
+        ("paper_downstream_sense_cpm", "Downstream sense CPM", "#bd4b32"),
+        ("paper_upstream_antisense_cpm", "Upstream antisense CPM", "#2a7f62"),
+    ]
+    available = [col for col, _, _ in value_cols if col in df.columns and df[col].notna().any()]
+    if not available:
+        note_path = os.path.join(out_dir, f"{gse}_paper_style_note.txt")
+        with open(note_path, "w") as fh:
+            fh.write(
+                "Paper-style outputs unavailable for this dataset.\n"
+                "Reason: no strand-resolved mate1-only paper-style metrics were produced, which is expected for unstranded libraries.\n"
+            )
+        print(f"  Saved: {note_path}")
+        return False
+
+    plot_df = df[["srr"] + available].melt(id_vars="srr", var_name="metric", value_name="value")
+    plot_df = plot_df.dropna(subset=["value"])
+    if plot_df.empty:
+        note_path = os.path.join(out_dir, f"{gse}_paper_style_note.txt")
+        with open(note_path, "w") as fh:
+            fh.write(
+                "Paper-style outputs unavailable for this dataset.\n"
+                "Reason: all paper-style summary values were empty after collection.\n"
+            )
+        print(f"  Saved: {note_path}")
+        return False
+
+    label_map = {col: label for col, label, _ in value_cols}
+    color_map = {col: color for col, _, color in value_cols}
+    plot_df["metric_label"] = plot_df["metric"].map(label_map)
+
+    fig, ax = plt.subplots(figsize=(5.5, 6))
+    sns.stripplot(
+        data=plot_df,
+        x="metric_label",
+        y="value",
+        jitter=0.25,
+        size=5,
+        alpha=0.7,
+        palette=[color_map[m] for m in available],
+        ax=ax,
+    )
+    ax.set_xlabel("")
+    ax.set_ylabel("CPM")
+    ax.set_title(f"Paper-Style Stranded Proxies\n{gse}")
+    sns.despine()
+    fig.tight_layout()
+    path = os.path.join(out_dir, f"{gse}_paper_style_strip.png")
+    fig.savefig(path, dpi=200)
+    plt.close(fig)
+    print(f"  Saved: {path}")
+    return True
+
 # ── Summary stats ──────────────────────────────────────────────────────────
-def write_summary(df, out_dir, gse):
+def write_summary(df, paper_df, out_dir, gse):
     stats = df["rt_cpm"].describe()
     path = os.path.join(out_dir, f"{gse}_summary_stats.txt")
     with open(path, "w") as fh:
@@ -133,6 +190,22 @@ def write_summary(df, out_dir, gse):
         nz = (df["rt_cpm"] > 0).sum()
         fh.write(f"  {nz}/{len(df)} samples ({nz/len(df)*100:.1f}%)\n")
         fh.write(f"\nTotal mapped reads — median: {df['total_mapped'].median():.0f}\n")
+        if paper_df is None or paper_df.empty:
+            fh.write("\nPaper-style summary: not available\n")
+        else:
+            downstream_col = "paper_downstream_sense_cpm"
+            upstream_col = "paper_upstream_antisense_cpm"
+            downstream_present = downstream_col in paper_df.columns and paper_df[downstream_col].notna().any()
+            upstream_present = upstream_col in paper_df.columns and paper_df[upstream_col].notna().any()
+            fh.write("\nPaper-style summary:\n")
+            if downstream_present:
+                fh.write(f"  Median downstream sense CPM: {paper_df[downstream_col].fillna(0).median():.6f}\n")
+            else:
+                fh.write("  Downstream sense CPM: not available\n")
+            if upstream_present:
+                fh.write(f"  Median upstream antisense CPM: {paper_df[upstream_col].fillna(0).median():.6f}\n")
+            else:
+                fh.write("  Upstream antisense CPM: not available\n")
     print(f"  Saved: {path}")
 
 # ── Main ───────────────────────────────────────────────────────────────────
@@ -147,16 +220,22 @@ def main():
             gse = "unknown_dataset"
 
     rt_csv = os.path.join(args.results_dir, "readthrough_signal.csv")
+    paper_csv = os.path.join(args.results_dir, "paper_style_signal.csv")
     if not os.path.exists(rt_csv):
         sys.exit(f"ERROR: {rt_csv} not found. Run 04_collect_results.sh first.")
 
     df = pd.read_csv(rt_csv)
+    paper_df = pd.read_csv(paper_csv) if os.path.exists(paper_csv) else None
     print(f"Loaded {len(df)} samples from {rt_csv}")
+    if paper_df is not None:
+        print(f"Loaded {len(paper_df)} samples from {paper_csv}")
 
     fig_strip_cpm(df, args.output_dir, gse)
     fig_coverage_profile(args.coverage_dir, df["srr"].tolist(), args.rt_window, args.output_dir, gse)
     fig_ranked_bar(df, args.output_dir, gse)
-    write_summary(df, args.output_dir, gse)
+    if paper_df is not None:
+        fig_paper_style(paper_df, args.output_dir, gse)
+    write_summary(df, paper_df, args.output_dir, gse)
     print("Visualization complete.")
 
 if __name__ == "__main__":

@@ -57,7 +57,13 @@ if [[ ! -f "$FLAGSTAT" ]]; then
 fi
 
 # ===========================================================================
-# 3. Read-through window depth — strand-aware, MAPQ >= 255 (uniquely mapped)
+# Uniquely-mapped MAPQ threshold: STAR=255, TopHat2=50. Configurable via UNIQUE_MAPQ.
+UNIQUE_MAPQ="${UNIQUE_MAPQ:-255}"
+# Paper-style MAPQ threshold: Philippe et al. use MAPQ>=20 for igvtools count.
+# This recovers junction-flanking read pairs where one mate maps into the L1 body.
+PAPER_MAPQ="${PAPER_MAPQ:-20}"
+
+# 3. Read-through window depth — strand-aware, MAPQ >= UNIQUE_MAPQ (uniquely mapped)
 #
 #   For stranded libraries the L1 read-through travels on the PLUS strand.
 #   We extract only plus-strand reads to avoid NEDD4 minus-strand intronic coverage:
@@ -78,7 +84,7 @@ if [[ ! -f "$RT_DEPTH" ]]; then
     echo "  [3] Computing read-through depth (${STRANDEDNESS} library)..."
 
     if [[ "$STRANDEDNESS" == "unstranded" ]]; then
-        samtools depth -a -d 0 -Q 255 -r "$RT_WINDOW" "$DEDUP_BAM" > "$RT_DEPTH"
+        samtools depth -a -d 0 -Q "$UNIQUE_MAPQ" -r "$RT_WINDOW" "$DEDUP_BAM" > "$RT_DEPTH"
 
     else
         R2FWD="${TMP_DIR}/${SRR}_r2fwd.bam"
@@ -87,12 +93,12 @@ if [[ ! -f "$RT_DEPTH" ]]; then
 
         if [[ "$STRANDEDNESS" == "reverse" ]]; then
             # TruSeq Stranded (fr-firststrand): plus-strand reads
-            samtools view -bh -q 255 -f 128 -F 16 "$DEDUP_BAM" "$RT_WINDOW" > "$R2FWD"
-            samtools view -bh -q 255 -f  80       "$DEDUP_BAM" "$RT_WINDOW" > "$R1REV"
+            samtools view -bh -q "$UNIQUE_MAPQ" -f 128 -F 16 "$DEDUP_BAM" "$RT_WINDOW" > "$R2FWD"
+            samtools view -bh -q "$UNIQUE_MAPQ" -f  80       "$DEDUP_BAM" "$RT_WINDOW" > "$R1REV"
         else
             # fr-secondstrand: plus-strand reads
-            samtools view -bh -q 255 -f  64 -F 16 "$DEDUP_BAM" "$RT_WINDOW" > "$R2FWD"
-            samtools view -bh -q 255 -f 144       "$DEDUP_BAM" "$RT_WINDOW" > "$R1REV"
+            samtools view -bh -q "$UNIQUE_MAPQ" -f  64 -F 16 "$DEDUP_BAM" "$RT_WINDOW" > "$R2FWD"
+            samtools view -bh -q "$UNIQUE_MAPQ" -f 144       "$DEDUP_BAM" "$RT_WINDOW" > "$R1REV"
         fi
 
         samtools merge -f "$MERGED" "$R2FWD" "$R1REV"
@@ -106,8 +112,9 @@ if [[ ! -f "$RT_DEPTH" ]]; then
 fi
 
 # ===========================================================================
-# 3b. Minus-strand read-through window depth — sanity control + NEDD4 intron
-#     retention signal.  Mirrors step 3 flag logic but selects minus-strand RNA.
+# 3b. Same-window minus-strand depth — opposite-strand background view for the
+#     same genomic interval. Mirrors step 3 flag logic but selects minus-strand
+#     RNA, which at this locus is largely host-gene background.
 #
 #   STRANDEDNESS="reverse" (fr-firststrand): minus-strand RNA reads are
 #     - R1 forward (flag: read1 [0x40] + NOT reverse [NOT 0x10]) -> minus-strand RNA
@@ -123,11 +130,11 @@ fi
 # ===========================================================================
 RT_MINUS_DEPTH="${COVERAGE_DIR}/${SRR}_readthrough_minus.depth"
 if [[ ! -f "$RT_MINUS_DEPTH" ]]; then
-    echo "  [3b] Computing minus-strand read-through depth (${STRANDEDNESS} library)..."
+    echo "  [3b] Computing same-window minus-strand background depth (${STRANDEDNESS} library)..."
 
     if [[ "$STRANDEDNESS" == "unstranded" ]]; then
         MMINUS="${TMP_DIR}/${SRR}_minus_all.bam"
-        samtools view -bh -q 255 -f 16 "$DEDUP_BAM" "$RT_WINDOW" \
+        samtools view -bh -q "$UNIQUE_MAPQ" -f 16 "$DEDUP_BAM" "$RT_WINDOW" \
             | samtools sort -T "${TMP_DIR}/sort_minus_${SRR}" - -o "$MMINUS"
         samtools index "$MMINUS"
         samtools depth -a -d 0 -r "$RT_WINDOW" "$MMINUS" > "$RT_MINUS_DEPTH"
@@ -140,12 +147,12 @@ if [[ ! -f "$RT_MINUS_DEPTH" ]]; then
 
         if [[ "$STRANDEDNESS" == "reverse" ]]; then
             # fr-firststrand: minus-strand RNA -> R1 forward + R2 reverse
-            samtools view -bh -q 255 -f  64 -F 16 "$DEDUP_BAM" "$RT_WINDOW" > "$MR1"
-            samtools view -bh -q 255 -f 144       "$DEDUP_BAM" "$RT_WINDOW" > "$MR2"
+            samtools view -bh -q "$UNIQUE_MAPQ" -f  64 -F 16 "$DEDUP_BAM" "$RT_WINDOW" > "$MR1"
+            samtools view -bh -q "$UNIQUE_MAPQ" -f 144       "$DEDUP_BAM" "$RT_WINDOW" > "$MR2"
         else
             # fr-secondstrand: minus-strand RNA -> R1 reverse + R2 forward
-            samtools view -bh -q 255 -f  80       "$DEDUP_BAM" "$RT_WINDOW" > "$MR1"
-            samtools view -bh -q 255 -f 128 -F 16 "$DEDUP_BAM" "$RT_WINDOW" > "$MR2"
+            samtools view -bh -q "$UNIQUE_MAPQ" -f  80       "$DEDUP_BAM" "$RT_WINDOW" > "$MR1"
+            samtools view -bh -q "$UNIQUE_MAPQ" -f 128 -F 16 "$DEDUP_BAM" "$RT_WINDOW" > "$MR2"
         fi
 
         samtools merge -f "$MMERGED" "$MR1" "$MR2"
@@ -159,6 +166,73 @@ if [[ ! -f "$RT_MINUS_DEPTH" ]]; then
 fi
 
 # ===========================================================================
+# 3c. Paper-style stranded windows using mate 1 only (Philippe et al. method).
+#     - Uses PAPER_MAPQ=20 (igvtools default) not UNIQUE_MAPQ, so junction-
+#       flanking reads where a mate lands in the L1 body are retained.
+#     - Uses raw FINAL_BAM (no dedup filter) matching paper's igvtools workflow.
+#     - Counts R1 only (one tag per fragment) on the correct RNA strand.
+#     - Also writes a companion R1_MAPQ20 count for CPM normalization.
+#
+#   STRANDEDNESS="reverse" (fr-firststrand / TruSeq Stranded):
+#     - downstream sense RNA (plus strand):   R1 reverse  (-f 80)
+#     - upstream antisense RNA (minus strand): R1 forward  (-f 64 -F 16)
+#
+#   STRANDEDNESS="forward" (fr-secondstrand):
+#     - downstream sense RNA (plus strand):   R1 forward  (-f 64 -F 16)
+#     - upstream antisense RNA (minus strand): R1 reverse  (-f 80)
+#
+#   STRANDEDNESS="unstranded": skipped.
+# ===========================================================================
+PAPER_SENSE_DEPTH="${COVERAGE_DIR}/${SRR}_paper_downstream_sense.depth"
+PAPER_ANTISENSE_DEPTH="${COVERAGE_DIR}/${SRR}_paper_upstream_antisense.depth"
+PAPER_R1_COUNT_FILE="${COVERAGE_DIR}/${SRR}_r1_mapq20_count.txt"
+
+# Write R1 MAPQ>=20 count for CPM denominator (once, regardless of strandedness)
+if [[ ! -f "$PAPER_R1_COUNT_FILE" ]]; then
+    echo "  [3c-pre] Counting R1 reads (MAPQ>=${PAPER_MAPQ}) for CPM denominator..."
+    samtools view -c -q "$PAPER_MAPQ" -f 64 "$FINAL_BAM" 2>/dev/null > "$PAPER_R1_COUNT_FILE"
+    echo "    R1 count: $(cat $PAPER_R1_COUNT_FILE)"
+fi
+
+if [[ ! -f "$PAPER_SENSE_DEPTH" || ! -f "$PAPER_ANTISENSE_DEPTH" ]]; then
+    echo "  [3c] Computing paper-style mate1 stranded windows (${STRANDEDNESS}, MAPQ>=${PAPER_MAPQ}, pre-dedup)..."
+
+    if [[ "$STRANDEDNESS" == "unstranded" ]]; then
+        echo "    Skipping paper-style windows for unstranded library"
+    else
+        PAPER_SENSE_BAM="${TMP_DIR}/${SRR}_paper_sense_mate1.bam"
+        PAPER_ANTISENSE_BAM="${TMP_DIR}/${SRR}_paper_antisense_mate1.bam"
+
+        if [[ "$STRANDEDNESS" == "reverse" ]]; then
+            # fr-firststrand: R1-reverse = plus-strand RNA (sense downstream)
+            samtools view -bh -q "$PAPER_MAPQ" -f 80 "$FINAL_BAM" "$PAPER_DOWNSTREAM_WINDOW" > "$PAPER_SENSE_BAM"
+            # fr-firststrand: R1-forward = minus-strand RNA (antisense upstream)
+            samtools view -bh -q "$PAPER_MAPQ" -f 64 -F 16 "$FINAL_BAM" "$PAPER_UPSTREAM_WINDOW" > "$PAPER_ANTISENSE_BAM"
+        else
+            # fr-secondstrand: R1-forward = plus-strand RNA (sense downstream)
+            samtools view -bh -q "$PAPER_MAPQ" -f 64 -F 16 "$FINAL_BAM" "$PAPER_DOWNSTREAM_WINDOW" > "$PAPER_SENSE_BAM"
+            # fr-secondstrand: R1-reverse = minus-strand RNA (antisense upstream)
+            samtools view -bh -q "$PAPER_MAPQ" -f 80 "$FINAL_BAM" "$PAPER_UPSTREAM_WINDOW" > "$PAPER_ANTISENSE_BAM"
+        fi
+
+        samtools sort "$PAPER_SENSE_BAM" -o "${PAPER_SENSE_BAM%.bam}_sorted.bam"
+        samtools index "${PAPER_SENSE_BAM%.bam}_sorted.bam"
+        samtools depth -a -d 0 -r "$PAPER_DOWNSTREAM_WINDOW" "${PAPER_SENSE_BAM%.bam}_sorted.bam" > "$PAPER_SENSE_DEPTH"
+
+        samtools sort "$PAPER_ANTISENSE_BAM" -o "${PAPER_ANTISENSE_BAM%.bam}_sorted.bam"
+        samtools index "${PAPER_ANTISENSE_BAM%.bam}_sorted.bam"
+        samtools depth -a -d 0 -r "$PAPER_UPSTREAM_WINDOW" "${PAPER_ANTISENSE_BAM%.bam}_sorted.bam" > "$PAPER_ANTISENSE_DEPTH"
+
+        rm -f \
+            "$PAPER_SENSE_BAM" "${PAPER_SENSE_BAM%.bam}_sorted.bam" "${PAPER_SENSE_BAM%.bam}_sorted.bam.bai" \
+            "$PAPER_ANTISENSE_BAM" "${PAPER_ANTISENSE_BAM%.bam}_sorted.bam" "${PAPER_ANTISENSE_BAM%.bam}_sorted.bam.bai" || true
+
+        echo "    Paper downstream sense: $(wc -l < "$PAPER_SENSE_DEPTH") positions | $(awk '{s+=$3} END{printf "mean depth=%.3f", s/NR}' "$PAPER_SENSE_DEPTH")"
+        echo "    Paper upstream antisense: $(wc -l < "$PAPER_ANTISENSE_DEPTH") positions | $(awk '{s+=$3} END{printf "mean depth=%.3f", s/NR}' "$PAPER_ANTISENSE_DEPTH")"
+    fi
+fi
+
+# ===========================================================================
 # 4. Background window depth (same strand logic; flanking normalization in Step 4)
 #    BACKGROUND_WINDOWS_BED built by 01_build_star_index.sh (NEDD4 exons subtracted)
 # ===========================================================================
@@ -167,7 +241,7 @@ if [[ ! -f "$BG_DEPTH" && -f "${BACKGROUND_WINDOWS_BED}" ]]; then
     echo "  [4] Computing background window depth..."
 
     if [[ "$STRANDEDNESS" == "unstranded" ]]; then
-        samtools depth -a -d 0 -Q 255 -b "$BACKGROUND_WINDOWS_BED" "$DEDUP_BAM" > "$BG_DEPTH"
+        samtools depth -a -d 0 -Q "$UNIQUE_MAPQ" -b "$BACKGROUND_WINDOWS_BED" "$DEDUP_BAM" > "$BG_DEPTH"
 
     else
         R2FWD="${TMP_DIR}/${SRR}_bg_r2fwd.bam"
@@ -175,11 +249,11 @@ if [[ ! -f "$BG_DEPTH" && -f "${BACKGROUND_WINDOWS_BED}" ]]; then
         MERGED="${TMP_DIR}/${SRR}_bg_plus.bam"
 
         if [[ "$STRANDEDNESS" == "reverse" ]]; then
-            samtools view -bh -q 255 -f 128 -F 16 "$DEDUP_BAM" > "$R2FWD"
-            samtools view -bh -q 255 -f  80       "$DEDUP_BAM" > "$R1REV"
+            samtools view -bh -q "$UNIQUE_MAPQ" -f 128 -F 16 "$DEDUP_BAM" > "$R2FWD"
+            samtools view -bh -q "$UNIQUE_MAPQ" -f  80       "$DEDUP_BAM" > "$R1REV"
         else
-            samtools view -bh -q 255 -f  64 -F 16 "$DEDUP_BAM" > "$R2FWD"
-            samtools view -bh -q 255 -f 144       "$DEDUP_BAM" > "$R1REV"
+            samtools view -bh -q "$UNIQUE_MAPQ" -f  64 -F 16 "$DEDUP_BAM" > "$R2FWD"
+            samtools view -bh -q "$UNIQUE_MAPQ" -f 144       "$DEDUP_BAM" > "$R1REV"
         fi
 
         samtools merge -f "$MERGED" "$R2FWD" "$R1REV"
@@ -200,7 +274,7 @@ fi
 SUBSET_BAM="${PERSISTENT_BAM}/${SRR}_nedd4locus.bam"
 if [[ ! -f "${SUBSET_BAM}.bai" ]]; then
     echo "  [5] Subsetting BAM to NEDD4 locus..."
-    samtools view -b -h -q 255 "$DEDUP_BAM" "$BAM_SUBSET_REGION" > "$SUBSET_BAM"
+    samtools view -b -h -q "$UNIQUE_MAPQ" "$DEDUP_BAM" "$BAM_SUBSET_REGION" > "$SUBSET_BAM"
     samtools index "$SUBSET_BAM"
     echo "    Subset BAM: $(du -sh "$SUBSET_BAM" | cut -f1)"
 fi
